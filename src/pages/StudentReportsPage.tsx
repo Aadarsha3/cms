@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAuth } from "@/lib/auth-context";
+
 import { useToast } from "@/hooks/use-toast";
 
 // todo: remove mock functionality
@@ -56,7 +56,7 @@ const gradeColors: Record<string, string> = {
 };
 
 export function StudentReportsPage() {
-  const { user } = useAuth();
+
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("grades");
 

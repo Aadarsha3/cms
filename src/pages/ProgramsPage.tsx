@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Search, Edit, Trash2, BookOpen, ChevronRight } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
