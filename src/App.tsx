@@ -56,22 +56,22 @@ function Router() {
         <ProtectedRoute component={DashboardPage} />
       </Route>
       <Route path="/programs">
-        <ProtectedRoute component={ProgramsPage} roles={["admin"]} />
+        <ProtectedRoute component={ProgramsPage} roles={["super_admin", "admin"]} />
       </Route>
       <Route path="/departments">
-        <ProtectedRoute component={DepartmentsPage} roles={["admin"]} />
+        <ProtectedRoute component={DepartmentsPage} roles={["super_admin"]} />
       </Route>
       <Route path="/courses">
-        <ProtectedRoute component={CoursesPage} roles={["admin", "staff"]} />
+        <ProtectedRoute component={CoursesPage} roles={["super_admin", "admin", "staff"]} />
       </Route>
       <Route path="/users">
-        <ProtectedRoute component={UsersPage} roles={["admin"]} />
+        <ProtectedRoute component={UsersPage} roles={["super_admin", "admin", "staff"]} />
       </Route>
       <Route path="/attendance">
-        <ProtectedRoute component={AttendancePage} roles={["admin", "staff"]} />
+        <ProtectedRoute component={AttendancePage} roles={["super_admin", "admin", "staff"]} />
       </Route>
       <Route path="/results">
-        <ProtectedRoute component={ResultsPage} roles={["admin", "staff"]} />
+        <ProtectedRoute component={ResultsPage} roles={["super_admin", "admin", "staff"]} />
       </Route>
       <Route path="/my-reports">
         <ProtectedRoute component={StudentReportsPage} roles={["student"]} />
@@ -80,7 +80,7 @@ function Router() {
         <ProtectedRoute component={StudentAttendancePage} roles={["student"]} />
       </Route>
       <Route path="/class-routine">
-        <ProtectedRoute component={ClassRoutinePage} roles={["student", "admin"]} />
+        <ProtectedRoute component={ClassRoutinePage} roles={["super_admin", "admin", "student"]} />
       </Route>
       <Route path="/profile">
         <ProtectedRoute component={ProfilePage} />

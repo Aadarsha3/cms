@@ -39,49 +39,55 @@ const navItems: NavItem[] = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["admin", "staff", "student"],
+    roles: ["super_admin", "admin", "staff", "student"],
   },
   {
     title: "Academic Programs",
     url: "/programs",
     icon: GraduationCap,
-    roles: ["admin"],
+    roles: ["super_admin", "admin"],
   },
   {
     title: "Departments",
     url: "/departments",
     icon: Building2,
-    roles: ["admin"],
+    roles: ["super_admin"],
   },
   {
     title: "Courses",
     url: "/courses",
     icon: BookOpen,
-    roles: ["admin", "staff"],
+    roles: ["super_admin", "admin", "staff"],
   },
   {
     title: "Identity Management",
     url: "/users",
     icon: Users,
-    roles: ["admin"],
+    roles: ["super_admin", "admin"],
+  },
+  {
+    title: "My Students",
+    url: "/users",
+    icon: Users,
+    roles: ["staff"],
   },
   {
     title: "Attendance",
     url: "/attendance",
     icon: ClipboardList,
-    roles: ["admin", "staff"],
+    roles: ["super_admin", "admin", "staff"],
   },
   {
     title: "Results",
     url: "/results",
     icon: FileText,
-    roles: ["admin", "staff"],
+    roles: ["super_admin", "admin", "staff"],
   },
   {
     title: "Class Routine",
     url: "/class-routine",
-    icon: ClipboardList, // Reusing icon or import Calendar if preferred, looks like user wants it prominent
-    roles: ["student", "admin"],
+    icon: ClipboardList,
+    roles: ["super_admin", "admin", "student"],
   },
   {
     title: "Reports",
@@ -99,23 +105,25 @@ const navItems: NavItem[] = [
     title: "Academic Calendar",
     url: "/calendar",
     icon: CalendarDays,
-    roles: ["admin", "staff", "student"],
+    roles: ["super_admin", "admin", "staff", "student"],
   },
   {
     title: "Profile",
     url: "/profile",
     icon: User,
-    roles: ["admin", "staff", "student"],
+    roles: ["super_admin", "admin", "staff", "student"],
   },
 ];
 
 const roleLabels: Record<UserRole, string> = {
-  admin: "Administrator",
+  super_admin: "Super Admin",
+  admin: "Admin",
   staff: "Staff Member",
   student: "Student",
 };
 
 const roleColors: Record<UserRole, string> = {
+  super_admin: "bg-destructive text-destructive-foreground",
   admin: "bg-primary text-primary-foreground",
   staff: "bg-primary text-primary-foreground",
   student: "bg-primary text-primary-foreground",

@@ -139,6 +139,7 @@ export function AttendancePage() {
   const { toast } = useToast();
 
   const userRole = user?.role || "student";
+  const isSuperAdmin = userRole === "super_admin";
   const isAdmin = userRole === "admin";
   const isStaff = userRole === "staff";
   const isStudent = userRole === "student";
@@ -318,7 +319,7 @@ export function AttendancePage() {
 
   // Determine if user can edit based on role and tab
   const canEditStudents = isStaff;
-  const canEditStaff = isAdmin;
+  const canEditStaff = isSuperAdmin || isAdmin;
 
   // Full-page attendance marking interface
   if (isInMarkingMode) {
@@ -407,13 +408,6 @@ export function AttendancePage() {
                 <Button size="sm" onClick={() => markAllAs("present")} className="gap-2">
                   <Check className="h-4 w-4" />
                   Mark All Present
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => markAllAs("absent")} className="gap-2">
-                  <X className="h-4 w-4" />
-                  Mark All Absent
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => markAllAs("late")} className="gap-2">
-                  Mark All Late
                 </Button>
               </div>
             </CardContent>
@@ -512,7 +506,7 @@ export function AttendancePage() {
     <MainLayout title="Attendance Management">
       <div className="space-y-6">
         {/* Tabs for Admin */}
-        {isAdmin && (
+        {(isSuperAdmin || isAdmin) && (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="students">Student Attendance</TabsTrigger>
@@ -592,7 +586,11 @@ export function AttendancePage() {
                             <div className="grid gap-4 py-4">
                               <div className="grid gap-2">
                                 <Label htmlFor="department">Department</Label>
-                                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                                <Select
+                                  value={isAdmin ? user?.department : selectedDepartment}
+                                  onValueChange={setSelectedDepartment}
+                                  disabled={isAdmin}
+                                >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select department" />
                                   </SelectTrigger>
@@ -647,15 +645,21 @@ export function AttendancePage() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                      <Select
+                        value={isAdmin ? user?.department : departmentFilter}
+                        onValueChange={setDepartmentFilter}
+                        disabled={isAdmin}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Filter by department" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Departments</SelectItem>
-                          {departments.map((d) => (
-                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                          ))}
+                          {departments
+                            .filter(d => isSuperAdmin || d === user?.department)
+                            .map((d) => (
+                              <SelectItem key={d} value={d}>{d}</SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     )}

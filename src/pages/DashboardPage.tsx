@@ -34,6 +34,12 @@ const mockStats = {
     { title: "Courses", value: "186", icon: BookOpen },
     { title: "Staff Members", value: "124", icon: Users },
   ],
+  super_admin: [
+    { title: "Total Students", value: "2,847", icon: Users, trend: { value: 12, label: "this semester" } },
+    { title: "Active Programs", value: "24", icon: GraduationCap, trend: { value: 4, label: "new programs" } },
+    { title: "Courses", value: "186", icon: BookOpen },
+    { title: "Staff Members", value: "124", icon: Users },
+  ],
   staff: [
     { title: "My Students", value: "156", icon: Users },
     { title: "Courses Teaching", value: "4", icon: BookOpen },
@@ -85,8 +91,9 @@ export function DashboardPage() {
 
   if (!user) return null;
 
-  const stats = mockStats[user.role];
-  const isAdmin = user.role === "admin";
+  const stats = mockStats[user.role as keyof typeof mockStats] || mockStats.admin;
+  const isSuperAdmin = user.role === "super_admin";
+  const isAdmin = user.role === "admin" || user.role === "super_admin";
   const isStaff = user.role === "staff";
 
   const handleOpenCreateDialog = () => {
@@ -204,10 +211,10 @@ export function DashboardPage() {
             </Card>
           )}
 
-          <Card>
+          <Card className={!(isAdmin || isStaff) ? "lg:col-span-2" : ""}>
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
               <CardTitle className="text-lg font-medium">Announcements</CardTitle>
-              {isAdmin && (
+              {isSuperAdmin && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -235,7 +242,7 @@ export function DashboardPage() {
                       <p className="text-sm font-medium">{announcement.title}</p>
                       <p className="text-xs text-muted-foreground">{announcement.date}</p>
                     </div>
-                    {isAdmin && (
+                    {isSuperAdmin && (
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
@@ -293,6 +300,78 @@ export function DashboardPage() {
                   <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-results">
                     <FileText className="h-4 w-4" />
                     View Results
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isStaff && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <Link href="/courses">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-courses">
+                    <BookOpen className="h-4 w-4" />
+                    My Courses
+                  </Button>
+                </Link>
+                <Link href="/attendance">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-attendance">
+                    <ClipboardCheck className="h-4 w-4" />
+                    Mark Attendance
+                  </Button>
+                </Link>
+                <Link href="/results">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-results">
+                    <FileText className="h-4 w-4" />
+                    Enter Grades
+                  </Button>
+                </Link>
+                <Link href="/calendar">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-calendar">
+                    <Calendar className="h-4 w-4" />
+                    Academic Calendar
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isAdmin && !isStaff && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <Link href="/class-routine">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-routine">
+                    <BookOpen className="h-4 w-4" />
+                    Class Routine
+                  </Button>
+                </Link>
+                <Link href="/student-attendance">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-attendance">
+                    <ClipboardCheck className="h-4 w-4" />
+                    My Attendance
+                  </Button>
+                </Link>
+                <Link href="/my-reports">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-reports">
+                    <TrendingUp className="h-4 w-4" />
+                    My Progress
+                  </Button>
+                </Link>
+                <Link href="/calendar">
+                  <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-quick-calendar">
+                    <Calendar className="h-4 w-4" />
+                    Academic Calendar
                   </Button>
                 </Link>
               </div>

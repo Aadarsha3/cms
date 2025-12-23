@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth-context";
 
 // todo: remove mock functionality
 interface ResultRecord {
@@ -64,7 +65,12 @@ const semesters = ["Fall", "Spring"];
 const courses = ["CS101", "CS201", "MBA501", "ME301"];
 
 export function ResultsPage() {
+  const { user } = useAuth();
   const [results, setResults] = useState(mockResults);
+  const userRole = user?.role || "student";
+  const isSuperAdmin = userRole === "super_admin";
+  const isAdmin = userRole === "admin";
+  const canEdit = isSuperAdmin || isAdmin;
   const [search, setSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
@@ -182,7 +188,7 @@ export function ResultsPage() {
                   <TableHead className="w-20 text-center">Score</TableHead>
                   <TableHead className="w-16 text-center">Grade</TableHead>
                   <TableHead className="w-20 text-center">Credits</TableHead>
-                  <TableHead className="w-24 text-right">Actions</TableHead>
+                  <TableHead className="w-24 text-right">{canEdit && "Actions"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -245,32 +251,34 @@ export function ResultsPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-center">{result.credits}</TableCell>
-                    <TableCell className="text-right">
-                      {editingId === result.id ? (
-                        <div className="flex justify-end gap-1">
+                    {canEdit && (
+                      <TableCell className="text-right">
+                        {editingId === result.id ? (
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => saveEdit(result.id)}
+                              data-testid={`button-save-result-${result.id}`}
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={cancelEdit}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => saveEdit(result.id)}
-                            data-testid={`button-save-result-${result.id}`}
+                            onClick={() => startEdit(result)}
+                            data-testid={`button-edit-result-${result.id}`}
                           >
-                            <Save className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={cancelEdit}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => startEdit(result)}
-                          data-testid={`button-edit-result-${result.id}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

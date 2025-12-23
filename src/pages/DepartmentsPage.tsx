@@ -103,7 +103,7 @@ export function DepartmentsPage() {
     const { toast } = useToast();
 
     // Admin-only access control
-    const isAdmin = user?.role === "admin";
+    const isAdmin = user?.role === "super_admin";
 
     if (!isAdmin) {
         return (

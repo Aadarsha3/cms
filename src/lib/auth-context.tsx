@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type UserRole = "admin" | "staff" | "student";
+export type UserRole = "super_admin" | "admin" | "staff" | "student";
 
 export interface AuthUser {
   id: string;
@@ -12,6 +12,7 @@ export interface AuthUser {
   // Staff-specific fields
   assignedCourses?: string[]; // Course codes that staff teaches
   collegeId?: string;
+  superAdminId?: string;
   // Student-specific fields
   phone?: string;
   universityId?: string;
@@ -41,9 +42,17 @@ const mockUsers: Record<string, AuthUser> = {
     id: "1",
     name: "Dr. Sarah Johnson",
     email: "admin@college.edu",
-    role: "admin",
-    collegeId: "ADM2024001",
+    role: "super_admin",
+    superAdminId: "SA2024001",
     department: "Administration",
+  },
+  "deptadmin@college.edu": {
+    id: "4",
+    name: "Prof. Alan Turing",
+    email: "deptadmin@college.edu",
+    role: "admin",
+    collegeId: "ADM2024002",
+    department: "Computer Science",
   },
   "staff@college.edu": {
     id: "2",
@@ -52,7 +61,7 @@ const mockUsers: Record<string, AuthUser> = {
     role: "staff",
     collegeId: "STF2024001",
     department: "Computer Science",
-    assignedCourses: ["CS101", "CS201"], // Courses this staff teaches
+    assignedCourses: ["CS101", "CS201", "CS301", "CS401", "CS501"], // Courses this staff teaches
   },
   "student@college.edu": {
     id: "3",

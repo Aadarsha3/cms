@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Search, Trash2, X, UserPlus, Camera, Edit } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,11 +44,12 @@ interface UserRecord {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "staff" | "student";
+  role: "super_admin" | "admin" | "staff" | "student";
   department: string;
   status: "active" | "inactive";
   phone?: string;
   collegeId?: string;
+  superAdminId?: string;
   universityId?: string;
   dateOfBirth?: string;
   gender?: "male" | "female" | "other";
@@ -67,10 +68,21 @@ const mockUsers: UserRecord[] = [
     id: "1",
     name: "Dr. Sarah Johnson",
     email: "sarah.johnson@college.edu",
-    role: "admin",
+    role: "super_admin",
     department: "Administration",
     status: "active",
     phone: "+1 555-0101",
+    superAdminId: "SA2024001",
+  },
+  {
+    id: "12",
+    name: "Prof. Alan Turing",
+    email: "deptadmin@college.edu",
+    role: "admin",
+    department: "Computer Science",
+    status: "active",
+    phone: "+1 555-0110",
+    collegeId: "ADM2024002",
   },
   {
     id: "2",
@@ -80,6 +92,7 @@ const mockUsers: UserRecord[] = [
     department: "Computer Science",
     status: "active",
     phone: "+1 555-0102",
+    collegeId: "STF2024001",
   },
   {
     id: "3",
@@ -146,7 +159,107 @@ const mockUsers: UserRecord[] = [
     guardianRelationship: "Mother",
     enrollmentDate: "2023-09-01",
     status: "inactive",
-    enrolledCourses: ["ME301"], // Enrolled in Mechanical Engineering course
+    enrolledCourses: ["ME301"],
+  },
+  {
+    id: "7",
+    name: "Alice Williams",
+    email: "alice.williams@student.college.edu",
+    role: "student",
+    department: "Computer Science",
+    collegeId: "COL2024003",
+    universityId: "UNI2024003",
+    dateOfBirth: "2003-03-15",
+    gender: "female",
+    currentClass: "BCS Year 1",
+    semester: "1",
+    guardianName: "David Williams",
+    guardianContact: "+1 555-0180",
+    guardianRelationship: "Father",
+    enrollmentDate: "2024-09-01",
+    status: "active",
+    enrolledCourses: ["CS101"],
+    phone: "+1 555-0105",
+  },
+  {
+    id: "8",
+    name: "Bob Brown",
+    email: "bob.brown@student.college.edu",
+    role: "student",
+    department: "Computer Science",
+    collegeId: "COL2024004",
+    universityId: "UNI2024004",
+    dateOfBirth: "2002-07-20",
+    gender: "male",
+    currentClass: "BCS Year 2",
+    semester: "3",
+    guardianName: "Susan Brown",
+    guardianContact: "+1 555-0190",
+    guardianRelationship: "Mother",
+    enrollmentDate: "2024-09-01",
+    status: "active",
+    enrolledCourses: ["CS201"],
+    phone: "+1 555-0106",
+  },
+  {
+    id: "9",
+    name: "Charlie Davis",
+    email: "charlie.davis@student.college.edu",
+    role: "student",
+    department: "Mechanical Engineering",
+    collegeId: "COL2024005",
+    universityId: "UNI2024005",
+    dateOfBirth: "2001-12-05",
+    gender: "male",
+    currentClass: "BME Year 3",
+    semester: "5",
+    guardianName: "Michael Davis",
+    guardianContact: "+1 555-0200",
+    guardianRelationship: "Father",
+    enrollmentDate: "2024-09-01",
+    status: "active",
+    enrolledCourses: ["ME301", "ME302"],
+    phone: "+1 555-0107",
+  },
+  {
+    id: "10",
+    name: "Diana Evans",
+    email: "diana.evans@student.college.edu",
+    role: "student",
+    department: "Computer Science",
+    collegeId: "COL2024006",
+    universityId: "UNI2024006",
+    dateOfBirth: "2003-09-12",
+    gender: "female",
+    currentClass: "BCS Year 1",
+    semester: "1",
+    guardianName: "Karen Evans",
+    guardianContact: "+1 555-0210",
+    guardianRelationship: "Mother",
+    enrollmentDate: "2024-09-01",
+    status: "active",
+    enrolledCourses: ["CS101"],
+    phone: "+1 555-0108",
+  },
+  {
+    id: "11",
+    name: "Evan Wright",
+    email: "evan.wright@student.college.edu",
+    role: "student",
+    department: "Business Administration",
+    collegeId: "COL2024007",
+    universityId: "UNI2024007",
+    dateOfBirth: "2000-05-25",
+    gender: "male",
+    currentClass: "MBA Year 1",
+    semester: "1",
+    guardianName: "Thomas Wright",
+    guardianContact: "+1 555-0220",
+    guardianRelationship: "Father",
+    enrollmentDate: "2024-09-01",
+    status: "active",
+    enrolledCourses: ["MBA501", "MBA502"],
+    phone: "+1 555-0109",
   },
 ];
 
@@ -177,13 +290,15 @@ const semesters = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
 
 const roleColors = {
+  super_admin: "bg-destructive text-destructive-foreground", // Distinct color for Super Admin
   admin: "bg-primary text-primary-foreground",
-  staff: "bg-primary text-primary-foreground",
-  student: "bg-primary text-primary-foreground",
+  staff: "bg-secondary text-secondary-foreground",
+  student: "bg-muted text-muted-foreground",
 };
 
 const roleLabels = {
-  admin: "Administrator",
+  super_admin: "Super Admin",
+  admin: "Admin",
   staff: "Staff",
   student: "Student",
 };
@@ -211,7 +326,9 @@ export function UsersPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
 
-  const userRole = user?.role || "admin";
+  const userRole = user?.role || "super_admin";
+  const isSuperAdmin = userRole === "super_admin";
+  const isAdmin = userRole === "admin";
   const isStaff = userRole === "staff";
   const staffAssignedCourses = user?.assignedCourses || [];
 
@@ -223,6 +340,7 @@ export function UsersPage() {
     phone: "",
     status: "active" as "active" | "inactive",
     collegeId: "",
+    superAdminId: "",
   });
 
   const [studentFormData, setStudentFormData] = useState<StudentFormData>({
@@ -257,16 +375,40 @@ export function UsersPage() {
     fileInputRef.current?.click();
   };
 
+  const [courseFilter, setCourseFilter] = useState("all");
+  const [classFilter, setClassFilter] = useState("all");
+
+  // Reset course and class filters when admin or super_admin role is selected
+  useEffect(() => {
+    if (roleFilter === "admin" || roleFilter === "super_admin") {
+      setCourseFilter("all");
+      setClassFilter("all");
+    }
+  }, [roleFilter]);
+
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()) ||
-      (u.collegeId && u.collegeId.toLowerCase().includes(search.toLowerCase()));
+      (u.collegeId && u.collegeId.toLowerCase().includes(search.toLowerCase())) ||
+      (u.superAdminId && u.superAdminId.toLowerCase().includes(search.toLowerCase()));
+
+    // Role filter
     const matchesRole = roleFilter === "all" || u.role === roleFilter;
-    const matchesDept = deptFilter === "all" || u.department === deptFilter;
+
+    // Department filter - Admin can only see their own department
+    const matchesDept = isAdmin
+      ? u.department === user?.department
+      : (deptFilter === "all" || u.department === deptFilter);
+
+    const matchesClass = classFilter === "all" || u.currentClass === classFilter;
+
+    // Course filter logic
+    const matchesCourse = courseFilter === "all" || (u.enrolledCourses && u.enrolledCourses.includes(courseFilter));
 
     // Faculty can only see students enrolled in their assigned courses
-    if (isStaff && u.role === "student") {
+    if (isStaff) {
+      if (u.role !== "student") return false; // Staff only sees students
       const studentEnrolledCourses = u.enrolledCourses || [];
       const hasCommonCourse = studentEnrolledCourses.some(course =>
         staffAssignedCourses.includes(course)
@@ -274,12 +416,30 @@ export function UsersPage() {
       if (!hasCommonCourse) return false;
     }
 
-    return matchesSearch && matchesRole && matchesDept;
+    // Admin (Department Admin) restriction: Can only see users in their department
+    if (isAdmin && u.department !== user?.department) {
+      return false;
+    }
+
+    return matchesSearch && matchesRole && matchesDept && matchesClass && matchesCourse;
   });
+
+  const uniqueCourses = Array.from(new Set(users.flatMap(u => u.enrolledCourses || [])));
+  // Filter courses for staff to only show what they teach
+  const availableCourses = isStaff ? staffAssignedCourses : uniqueCourses;
 
   const openCreateDialog = () => {
     setEditingUserId(null);
-    setFormData({ name: "", email: "", role: "student", department: "", phone: "", status: "active", collegeId: "" });
+    setFormData({
+      name: "",
+      email: "",
+      role: (roleFilter !== "all" ? roleFilter : "student") as UserRecord["role"],
+      department: deptFilter !== "all" ? deptFilter : "",
+      phone: "",
+      status: "active",
+      collegeId: "",
+      superAdminId: "",
+    });
     setStudentFormData({
       collegeId: "",
       universityId: "",
@@ -309,7 +469,8 @@ export function UsersPage() {
       department: user.department,
       phone: user.phone || "",
       status: user.status,
-      collegeId: user.collegeId || "",
+      collegeId: user.role === "super_admin" ? "" : (user.collegeId || ""),
+      superAdminId: user.superAdminId || "",
     });
 
     setStudentFormData({
@@ -330,9 +491,21 @@ export function UsersPage() {
 
   const handleSave = () => {
     // Validation
-    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.department || !formData.collegeId.trim()) {
-      const idLabel = formData.role === "staff" ? "Staff_Id" : formData.role === "student" ? "Student_Id" : "Admin_Id";
-      toast({ title: `Please fill in all basic information fields including ${idLabel}`, variant: "destructive" });
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.department) {
+      toast({ title: "Please fill in all basic information fields", variant: "destructive" });
+      return;
+    }
+
+    // Validate ID field based on role
+    if (formData.role === "super_admin" && !formData.superAdminId?.trim()) {
+      toast({ title: "Please fill in Super Admin ID", variant: "destructive" });
+      return;
+    }
+
+    if ((formData.role === "admin" || formData.role === "staff" || formData.role === "student") && !formData.collegeId.trim()) {
+      const idLabel = formData.role === "admin" ? "Admin ID" :
+        formData.role === "staff" ? "Staff ID" : "Student ID";
+      toast({ title: `Please fill in ${idLabel}`, variant: "destructive" });
       return;
     }
 
@@ -373,7 +546,9 @@ export function UsersPage() {
         enrollmentDate: editingUserId ? (users.find(u => u.id === editingUserId)?.enrollmentDate || new Date().toISOString().split("T")[0]) : new Date().toISOString().split("T")[0],
         avatarUrl: avatarUpload || undefined,
       }
-      : { ...baseUser, collegeId: formData.collegeId, avatarUrl: avatarUpload || undefined };
+      : formData.role === "super_admin"
+        ? { ...baseUser, superAdminId: formData.collegeId, avatarUrl: avatarUpload || undefined }
+        : { ...baseUser, collegeId: formData.collegeId, avatarUrl: avatarUpload || undefined };
 
     if (editingUserId) {
       setUsers((prev) => prev.map((u) => u.id === editingUserId ? newUser : u));
@@ -401,54 +576,100 @@ export function UsersPage() {
   };
 
   return (
-    <MainLayout title="Identity Management">
+    <MainLayout title={isStaff ? "My Students" : "Identity Management"}>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, email, or ID..."
+                placeholder={isStaff ? "Search students..." : "Search by name, email, or ID..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
                 data-testid="input-search-users"
               />
             </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full sm:w-40" data-testid="select-role-filter">
-                <SelectValue placeholder="Role" />
+
+            {!isStaff && (
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full sm:w-40" data-testid="select-role-filter">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  {isSuperAdmin && <SelectItem value="super_admin">Super Admin</SelectItem>}
+                  {(isSuperAdmin || isAdmin) && <SelectItem value="admin">Admin</SelectItem>}
+                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
+            {!isStaff && !isAdmin && (
+              <Select value={deptFilter} onValueChange={setDeptFilter}>
+                <SelectTrigger className="w-full sm:w-48" data-testid="select-dept-filter">
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {departments.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            <Select
+              value={roleFilter === "admin" || roleFilter === "super_admin" ? "all" : courseFilter}
+              onValueChange={setCourseFilter}
+              disabled={roleFilter === "admin" || roleFilter === "super_admin"}
+            >
+              <SelectTrigger className="w-full sm:w-40" data-testid="select-course-filter">
+                <SelectValue placeholder="Course" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="student">Student</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={deptFilter} onValueChange={setDeptFilter}>
-              <SelectTrigger className="w-full sm:w-48" data-testid="select-dept-filter">
-                <SelectValue placeholder="Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
+                <SelectItem value="all">All Courses</SelectItem>
+                {availableCourses.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-user">
-              <UserPlus className="h-4 w-4" />
-              Enroll User
-            </Button>
+
+            <Select
+              value={roleFilter === "admin" || roleFilter === "super_admin" ? "all" : classFilter}
+              onValueChange={setClassFilter}
+              disabled={roleFilter === "admin" || roleFilter === "super_admin"}
+            >
+              <SelectTrigger className="w-full sm:w-40" data-testid="select-class-filter">
+                <SelectValue placeholder="Section/Class" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sections</SelectItem>
+                {classes.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {!isStaff && (
+              <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-user">
+                <UserPlus className="h-4 w-4" />
+                Enroll User
+              </Button>
+            )}
           </div>
 
-          {(roleFilter !== "all" || deptFilter !== "all") && (
+          {(roleFilter !== "all" || deptFilter !== "all" || courseFilter !== "all" || classFilter !== "all") && (
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-muted-foreground">Filters:</span>
-              {roleFilter !== "all" && (
+              {roleFilter !== "all" && !isStaff && (
                 <Badge
                   variant="secondary"
                   className="gap-1 cursor-pointer"
@@ -458,13 +679,33 @@ export function UsersPage() {
                   <X className="h-3 w-3" />
                 </Badge>
               )}
-              {deptFilter !== "all" && (
+              {deptFilter !== "all" && !isStaff && (
                 <Badge
                   variant="secondary"
                   className="gap-1 cursor-pointer"
                   onClick={() => setDeptFilter("all")}
                 >
                   Dept: {deptFilter}
+                  <X className="h-3 w-3" />
+                </Badge>
+              )}
+              {courseFilter !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="gap-1 cursor-pointer"
+                  onClick={() => setCourseFilter("all")}
+                >
+                  Course: {courseFilter}
+                  <X className="h-3 w-3" />
+                </Badge>
+              )}
+              {classFilter !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="gap-1 cursor-pointer"
+                  onClick={() => setClassFilter("all")}
+                >
+                  Class: {classFilter}
                   <X className="h-3 w-3" />
                 </Badge>
               )}
@@ -484,7 +725,7 @@ export function UsersPage() {
                   <TableHead className="hidden lg:table-cell">Department</TableHead>
                   <TableHead className="hidden xl:table-cell">ID</TableHead>
                   <TableHead className="w-20 text-center">Status</TableHead>
-                  <TableHead className="w-24 text-right">Actions</TableHead>
+                  {!isStaff && <TableHead className="w-24 text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -523,7 +764,7 @@ export function UsersPage() {
                       {user.department}
                     </TableCell>
                     <TableCell className="hidden xl:table-cell font-mono text-sm text-muted-foreground">
-                      {user.collegeId || "-"}
+                      {user.superAdminId || user.collegeId || "-"}
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
@@ -532,27 +773,29 @@ export function UsersPage() {
                         {user.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(user)}
-                          data-testid={`button-edit-user-${user.id}`}
-                          title="Edit User"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(user.id)}
-                          data-testid={`button-delete-user-${user.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {!isStaff && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(user)}
+                            data-testid={`button-edit-user-${user.id}`}
+                            title="Edit User"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(user.id)}
+                            data-testid={`button-delete-user-${user.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -561,7 +804,9 @@ export function UsersPage() {
         </Card>
 
         <div className="text-sm text-muted-foreground">
-          Showing {filteredUsers.length} of {users.length} users
+          Showing {filteredUsers.length} of {isStaff
+            ? users.filter(u => u.role === "student" && (u.enrolledCourses || []).some(c => staffAssignedCourses.includes(c))).length
+            : users.length} users
         </div>
       </div>
 
@@ -610,7 +855,9 @@ export function UsersPage() {
                   <SelectContent>
                     <SelectItem value="student">Student</SelectItem>
                     <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
+                    {/* Only Super Admin can create Admin or Super Admin */}
+                    {isSuperAdmin && <SelectItem value="admin">Admin</SelectItem>}
+                    {isSuperAdmin && <SelectItem value="super_admin">Super Admin</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>
@@ -646,18 +893,21 @@ export function UsersPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="department">Department</Label>
                   <Select
-                    value={formData.department}
+                    value={isAdmin ? user?.department : formData.department}
                     onValueChange={(v) => setFormData({ ...formData, department: v })}
+                    disabled={isAdmin}
                   >
                     <SelectTrigger data-testid="select-user-department">
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
-                        </SelectItem>
-                      ))}
+                      {departments
+                        .filter((d) => formData.role === "super_admin" || d !== "Administration")
+                        .map((d) => (
+                          <SelectItem key={d} value={d}>
+                            {d}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -678,14 +928,21 @@ export function UsersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="collegeId">
-                    {formData.role === "staff" ? "Staff_Id" :
-                      formData.role === "student" ? "Student_Id" :
-                        formData.role === "admin" ? "Admin_Id" : "College ID"}
+                    {formData.role === "super_admin" ? "Super Admin ID" :
+                      formData.role === "admin" ? "Admin ID" :
+                        formData.role === "staff" ? "Staff ID" :
+                          "Student ID"}
                   </Label>
                   <Input
                     id="collegeId"
-                    value={formData.collegeId}
-                    onChange={(e) => setFormData({ ...formData, collegeId: e.target.value })}
+                    value={formData.role === "super_admin" ? (formData.superAdminId || "") : formData.collegeId}
+                    onChange={(e) => {
+                      if (formData.role === "super_admin") {
+                        setFormData({ ...formData, superAdminId: e.target.value });
+                      } else {
+                        setFormData({ ...formData, collegeId: e.target.value });
+                      }
+                    }}
                     placeholder="e.g., COL2024001"
                     data-testid="input-college-id"
                   />
@@ -900,14 +1157,16 @@ export function UsersPage() {
               </div>
 
               <div className="mt-4">
-                <Button
-                  className="w-full"
-                  onClick={() => handleEdit(selectedUser)}
-                  data-testid="button-edit-from-sheet"
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit User Details
-                </Button>
+                {!isStaff && (
+                  <Button
+                    className="w-full"
+                    onClick={() => handleEdit(selectedUser)}
+                    data-testid="button-edit-from-sheet"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit User Details
+                  </Button>
+                )}
               </div>
 
               {selectedUser.role === "student" && (

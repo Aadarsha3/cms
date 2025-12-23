@@ -12,12 +12,14 @@ import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
 const roleLabels = {
-  admin: "Administrator",
+  super_admin: "Super Admin",
+  admin: "Admin",
   staff: "Staff Member",
   student: "Student",
 };
 
 const roleColors = {
+  super_admin: "bg-destructive text-destructive-foreground",
   admin: "bg-primary text-primary-foreground",
   staff: "bg-primary text-primary-foreground",
   student: "bg-primary text-primary-foreground",
@@ -84,7 +86,7 @@ export function ProfilePage() {
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-                {user.role !== "student" && (
+                {user.role === "super_admin" && (
                   <Button
                     variant="outline"
                     size="icon"
@@ -111,7 +113,7 @@ export function ProfilePage() {
                   <Badge className={roleColors[user.role]}>{roleLabels[user.role]}</Badge>
                 </div>
               </div>
-              {user.role !== "student" && (
+              {user.role === "super_admin" && (
                 <Button
                   variant={isEditing ? "default" : "outline"}
                   onClick={() => (isEditing ? handleSave() : setIsEditing(true))}

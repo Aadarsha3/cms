@@ -151,7 +151,7 @@ export function CalendarPage() {
         color: "#22c55e",
     });
 
-    const isAdmin = user?.role === "admin";
+    const isAdmin = user?.role === "super_admin";
 
     const handleAddEvent = () => {
         if (!newEvent.title || !date) {

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Plus, Search, Edit, Trash2, Upload, FileText, X, BookOpen } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Upload, FileText, X, BookOpen, Users, Activity } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -42,6 +50,7 @@ interface Course {
   instructor: string;
   syllabus?: string;
   description: string;
+  department?: string; // Added to link courses to departments via programs
 }
 
 const mockCourses: Course[] = [
@@ -61,7 +70,7 @@ const mockCourses: Course[] = [
     name: "Data Structures",
     credits: 4,
     program: "Bachelor of Computer Science",
-    instructor: "Dr. Lisa Wang",
+    instructor: "Prof. Michael Chen",
     syllabus: "cs201_syllabus.pdf",
     description: "Advanced data structures and algorithms.",
   },
@@ -71,7 +80,7 @@ const mockCourses: Course[] = [
     name: "Database Management Systems",
     credits: 4,
     program: "Bachelor of Computer Science",
-    instructor: "Dr. Rajesh Kumar",
+    instructor: "Prof. Michael Chen",
     syllabus: "cs301_syllabus.pdf",
     description: "Relational database design, SQL, and database administration.",
   },
@@ -81,7 +90,7 @@ const mockCourses: Course[] = [
     name: "Web Development",
     credits: 3,
     program: "Bachelor of Computer Science",
-    instructor: "Prof. Sarah Johnson",
+    instructor: "Prof. Michael Chen",
     description: "Modern web development with React, Node.js, and databases.",
   },
   {
@@ -90,7 +99,7 @@ const mockCourses: Course[] = [
     name: "Artificial Intelligence",
     credits: 4,
     program: "Bachelor of Computer Science",
-    instructor: "Dr. Deepak Sharma",
+    instructor: "Prof. Michael Chen",
     syllabus: "cs501_syllabus.pdf",
     description: "Machine learning, neural networks, and AI applications.",
   },
@@ -202,12 +211,17 @@ export function CoursesPage() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { toast } = useToast();
 
+  // Sheet state
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedCourseForSheet, setSelectedCourseForSheet] = useState<Course | null>(null);
+
   const userRole = user?.role || "student";
+  const isSuperAdmin = userRole === "super_admin";
   const isAdmin = userRole === "admin";
   const isStaff = userRole === "staff";
 
   // Staff and students cannot create/edit/delete courses, only admin can
-  const canManageCourses = isAdmin;
+  const canManageCourses = isSuperAdmin || isAdmin;
 
   const [formData, setFormData] = useState({
     code: "",
@@ -220,18 +234,58 @@ export function CoursesPage() {
   });
   const [syllabusFileName, setSyllabusFileName] = useState("");
 
-  const programs = Array.from(new Set(courses.map((c) => c.program)));
+  const userDepartment = user?.department;
+
+  // For filtering: get list of programs that belong to admin's department
+  const departmentPrograms: Record<string, string[]> = {
+    "Computer Science": ["Bachelor of Computer Science", "Bachelor of Information Technology", "Master of Computer Applications"],
+    "Business Administration": ["Master of Business Administration"],
+    "Mechanical Engineering": ["Bachelor of Mechanical Engineering", "Bachelor of Civil Engineering", "Bachelor of Electronics Engineering"],
+    "Physics": ["Doctor of Philosophy in Physics"],
+  };
+
+  // Filter programs based on admin's department
+  const allPrograms = Array.from(new Set(courses.map((c) => c.program)));
+  const programs = isAdmin && userDepartment
+    ? allPrograms.filter(p => (departmentPrograms[userDepartment] || []).includes(p))
+    : allPrograms;
+  const instructors = Array.from(new Set(courses.map((c) => c.instructor)));
+
+  const staffAssignedCourses = user?.assignedCourses || [];
+
+  const allowedPrograms = isAdmin && userDepartment
+    ? (departmentPrograms[userDepartment] || [])
+    : [];
 
   const filteredCourses = courses.filter((c) => {
     const matchesSearch =
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.code.toLowerCase().includes(search.toLowerCase());
     const matchesProgram = programFilter === "all" || c.program === programFilter;
+
+    if (isStaff) {
+      return matchesSearch && matchesProgram && staffAssignedCourses.includes(c.code);
+    }
+
+    // Admin can only see courses in programs that belong to their department
+    if (isAdmin) {
+      const belongsToDepartment = allowedPrograms.includes(c.program);
+      return matchesSearch && matchesProgram && belongsToDepartment;
+    }
+
     return matchesSearch && matchesProgram;
   });
 
   const openCreateDialog = () => {
-    setFormData({ code: "", name: "", credits: "3", program: "", instructor: "", description: "", syllabus: "" });
+    setFormData({
+      code: "",
+      name: "",
+      credits: "3",
+      program: programFilter !== "all" ? programFilter : "",
+      instructor: "",
+      description: "",
+      syllabus: "",
+    });
     setSyllabusFileName("");
     setIsEditing(false);
     setIsDialogOpen(true);
@@ -304,6 +358,23 @@ export function CoursesPage() {
     toast({ title: "Syllabus uploaded successfully" });
   };
 
+  const openCourseDetails = (course: Course) => {
+    setSelectedCourseForSheet(course);
+    setIsSheetOpen(true);
+  };
+
+  // Mock stats generation
+  const getCourseStats = (courseId: string) => {
+    return {
+      totalStudents: 45,
+      avgAttendance: "88%",
+      upcomingAssignments: 2,
+      lastClassDate: "2024-03-20",
+    };
+  };
+
+  const stats = selectedCourseForSheet ? getCourseStats(selectedCourseForSheet.id) : null;
+
   return (
     <MainLayout title="Courses">
       <div className="space-y-6">
@@ -347,8 +418,14 @@ export function CoursesPage() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{courses.length}</p>
-                <p className="text-sm text-muted-foreground">Total Courses</p>
+                <p className="text-2xl font-bold">
+                  {isStaff
+                    ? courses.filter(c => staffAssignedCourses.includes(c.code)).length
+                    : isAdmin
+                      ? filteredCourses.length
+                      : courses.length}
+                </p>
+                <p className="text-sm text-muted-foreground">{isStaff ? "My Courses" : isAdmin ? "My Department Courses" : "Total Courses"}</p>
               </div>
             </CardContent>
           </Card>
@@ -377,7 +454,12 @@ export function CoursesPage() {
               </TableHeader>
               <TableBody>
                 {filteredCourses.map((course) => (
-                  <TableRow key={course.id} data-testid={`row-course-${course.id}`}>
+                  <TableRow
+                    key={course.id}
+                    data-testid={`row-course-${course.id}`}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => openCourseDetails(course)}
+                  >
                     <TableCell className="font-mono text-sm">{course.code}</TableCell>
                     <TableCell>
                       <div>
@@ -404,7 +486,10 @@ export function CoursesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleUploadSyllabus(course.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadSyllabus(course.id);
+                          }}
                           data-testid={`button-upload-syllabus-${course.id}`}
                         >
                           <Upload className="h-4 w-4" />
@@ -417,7 +502,10 @@ export function CoursesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openEditDialog(course)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditDialog(course);
+                            }}
                             data-testid={`button-edit-course-${course.id}`}
                           >
                             <Edit className="h-4 w-4" />
@@ -425,7 +513,10 @@ export function CoursesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(course.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(course.id);
+                            }}
                             data-testid={`button-delete-course-${course.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -457,6 +548,25 @@ export function CoursesPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="program">Program</Label>
+              <Select
+                value={formData.program}
+                onValueChange={(v) => setFormData({ ...formData, program: v })}
+              >
+                <SelectTrigger data-testid="select-course-program">
+                  <SelectValue placeholder="Select program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programs.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="code">Course Code</Label>
@@ -497,33 +607,24 @@ export function CoursesPage() {
                 data-testid="input-course-name"
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="program">Program</Label>
+              <Label htmlFor="instructor">Instructor</Label>
               <Select
-                value={formData.program}
-                onValueChange={(v) => setFormData({ ...formData, program: v })}
+                value={formData.instructor}
+                onValueChange={(v) => setFormData({ ...formData, instructor: v })}
               >
-                <SelectTrigger data-testid="select-course-program">
-                  <SelectValue placeholder="Select program" />
+                <SelectTrigger data-testid="select-course-instructor">
+                  <SelectValue placeholder="Select instructor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {programs.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
+                  {instructors.map((i) => (
+                    <SelectItem key={i} value={i}>
+                      {i}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="instructor">Instructor</Label>
-              <Input
-                id="instructor"
-                value={formData.instructor}
-                onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
-                placeholder="e.g., Prof. John Smith"
-                data-testid="input-course-instructor"
-              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
@@ -585,6 +686,96 @@ export function CoursesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Course Details</SheetTitle>
+            <SheetDescription>
+              Detailed information and statistics for the course.
+            </SheetDescription>
+          </SheetHeader>
+          {selectedCourseForSheet && stats && (
+            <div className="mt-6 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedCourseForSheet.name}</h3>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="font-mono bg-muted px-1.5 py-0.5 rounded">{selectedCourseForSheet.code}</span>
+                    <span>•</span>
+                    <span>{selectedCourseForSheet.credits} Credits</span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-4 flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Users className="h-4 w-4" />
+                      <span>Students</span>
+                    </div>
+                    <p className="text-2xl font-bold">{stats.totalStudents}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Activity className="h-4 w-4" />
+                      <span>Avg. Attendance</span>
+                    </div>
+                    <p className="text-2xl font-bold text-green-600">{stats.avgAttendance}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-medium">Course Information</h4>
+                <div className="grid gap-3 text-sm">
+                  <div className="flex justify-between py-2 border-b">
+                    <span className="text-muted-foreground">Program</span>
+                    <span className="font-medium text-right">{selectedCourseForSheet.program}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b">
+                    <span className="text-muted-foreground">Instructor</span>
+                    <span className="font-medium text-right">{selectedCourseForSheet.instructor}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b">
+                    <span className="text-muted-foreground">Last Class</span>
+                    <span className="font-medium text-right">{stats.lastClassDate}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-medium">Description</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {selectedCourseForSheet.description || "No description available."}
+                </p>
+              </div>
+
+              {selectedCourseForSheet.syllabus && (
+                <div className="p-4 border rounded-lg bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-sm">Syllabus.pdf</span>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-8">
+                      Download
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </MainLayout>
   );
 }

@@ -39,6 +39,7 @@ interface ClassSession {
     startDate: string; // YYYY-MM-DD
     endDate: string; // YYYY-MM-DD
     daysOfWeek: string[]; // e.g., ["Sunday", "Monday"]
+    program: string; // Academic program
 }
 
 // Store all class sessions in a flat array with comprehensive demo data
@@ -55,6 +56,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Sunday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "2",
@@ -67,6 +69,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Sunday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "3",
@@ -79,6 +82,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Sunday"],
+        program: "Bachelor of Computer Science",
     },
     // Monday classes
     {
@@ -92,6 +96,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Monday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "5",
@@ -104,6 +109,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Monday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "6",
@@ -116,6 +122,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Monday"],
+        program: "Bachelor of Computer Science",
     },
     // Tuesday classes
     {
@@ -129,6 +136,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Tuesday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "8",
@@ -141,6 +149,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Tuesday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "9",
@@ -153,6 +162,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Tuesday"],
+        program: "Bachelor of Computer Science",
     },
     // Wednesday classes
     {
@@ -166,6 +176,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Wednesday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "11",
@@ -178,6 +189,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Wednesday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "12",
@@ -190,6 +202,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Wednesday"],
+        program: "Bachelor of Computer Science",
     },
     // Thursday classes
     {
@@ -203,6 +216,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Thursday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "14",
@@ -215,6 +229,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Thursday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "15",
@@ -227,6 +242,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Thursday"],
+        program: "Bachelor of Computer Science",
     },
     // Friday classes
     {
@@ -240,6 +256,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Friday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "17",
@@ -252,6 +269,7 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Friday"],
+        program: "Bachelor of Computer Science",
     },
     {
         id: "18",
@@ -264,13 +282,51 @@ const initialClassSessions: ClassSession[] = [
         startDate: "2025-07-01",
         endDate: "2026-01-30",
         daysOfWeek: ["Friday"],
+        program: "Bachelor of Computer Science",
     },
+];
+
+// Course reference data for dropdowns
+const availableCourses = [
+    { code: "CIS091-1", name: "Academic Skills and Team Based Learning", lecturer: "Lecture Team", program: "Bachelor of Computer Science" },
+    { code: "CIS092-1", name: "Fundamentals of Software Engineering", lecturer: "Anand Gautam", program: "Bachelor of Computer Science" },
+    { code: "CIS093-1", name: "Mathematics and Concepts for Computational Thinking", lecturer: "Nujan Shrestha", program: "Bachelor of Computer Science" },
+    { code: "CIS094-1", name: "Database Management Systems", lecturer: "Rajesh Kumar", program: "Bachelor of Computer Science" },
+    { code: "CIS095-1", name: "Object-Oriented Programming", lecturer: "Priya Sharma", program: "Bachelor of Computer Science" },
+    { code: "CIS096-1", name: "Computer Networks", lecturer: "Suman Adhikari", program: "Bachelor of Computer Science" },
+    { code: "CIS097-1", name: "Web Development", lecturer: "Binod Thapa", program: "Bachelor of Computer Science" },
+    { code: "CIS098-1", name: "Operating Systems", lecturer: "Meera Rai", program: "Bachelor of Computer Science" },
+    { code: "CIS099-1", name: "Data Structures and Algorithms", lecturer: "Anil Thapa", program: "Bachelor of Computer Science" },
+    { code: "CIS100-1", name: "Artificial Intelligence", lecturer: "Deepak Sharma", program: "Bachelor of Computer Science" },
+    { code: "CIS101-1", name: "Mobile Application Development", lecturer: "Ramesh Gurung", program: "Bachelor of Computer Science" },
+    { code: "CIS102-1", name: "Software Testing and Quality Assurance", lecturer: "Sarita Lama", program: "Bachelor of Computer Science" },
 ];
 
 export function ClassRoutinePage() {
     const { user } = useAuth();
     const { toast } = useToast();
+
+    const isAdmin = user?.role === "super_admin";
+    const isStudent = user?.role === "student";
+
+    // Map student's currentClass to program name
+    const getStudentProgram = (currentClass: string | undefined): string => {
+        if (!currentClass) return "all";
+        if (currentClass.includes("BCS")) return "Bachelor of Computer Science";
+        if (currentClass.includes("BIT")) return "Bachelor of Information Technology";
+        if (currentClass.includes("MBA")) return "Master of Business Administration";
+        if (currentClass.includes("BME")) return "Bachelor of Mechanical Engineering";
+        if (currentClass.includes("BCE")) return "Bachelor of Civil Engineering";
+        if (currentClass.includes("BEE")) return "Bachelor of Electronics Engineering";
+        if (currentClass.includes("MCA")) return "Master of Computer Applications";
+        return "all";
+    };
+
+    // Auto-select program for students
+    const studentProgram = isStudent ? getStudentProgram(user?.currentClass) : "all";
+
     const [selectedDay, setSelectedDay] = useState("Sunday");
+    const [selectedProgram, setSelectedProgram] = useState(studentProgram);
     const [classSessions, setClassSessions] = useState<ClassSession[]>(initialClassSessions);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -284,18 +340,21 @@ export function ClassRoutinePage() {
         startDate: "",
         endDate: "",
         daysOfWeek: [],
+        program: "",
     });
 
-    const isAdmin = user?.role === "admin";
+    // Get unique programs from class sessions
+    const programs = Array.from(new Set(classSessions.map(s => s.program)));
 
-    // Filter sessions for the selected day and check if they're currently active
+    // Filter sessions for the selected day, program, and check if they're currently active
     const getSessionsForDay = (day: string) => {
         const today = new Date().toISOString().split('T')[0];
         return classSessions
             .filter(session =>
                 session.daysOfWeek.includes(day) &&
                 session.startDate <= today &&
-                session.endDate >= today
+                session.endDate >= today &&
+                (selectedProgram === "all" || session.program === selectedProgram)
             )
             .sort((a, b) => a.startTime.localeCompare(b.startTime));
     };
@@ -312,14 +371,15 @@ export function ClassRoutinePage() {
             startDate: session.startDate,
             endDate: session.endDate,
             daysOfWeek: session.daysOfWeek,
+            program: session.program,
         });
         setIsDialogOpen(true);
     };
 
     const handleAddSession = () => {
         if (!newSession.startTime || !newSession.endTime || !newSession.courseName ||
-            !newSession.startDate || !newSession.endDate || !newSession.daysOfWeek?.length) {
-            toast({ title: "Please fill in all required fields including days and dates", variant: "destructive" });
+            !newSession.startDate || !newSession.endDate || !newSession.daysOfWeek?.length || !newSession.program) {
+            toast({ title: "Please fill in all required fields including program, days and dates", variant: "destructive" });
             return;
         }
 
@@ -336,6 +396,7 @@ export function ClassRoutinePage() {
                 startDate: newSession.startDate!,
                 endDate: newSession.endDate!,
                 daysOfWeek: newSession.daysOfWeek!,
+                program: newSession.program!,
             };
 
             setClassSessions(prev => prev.map(s => s.id === editingSessionId ? updatedSession : s));
@@ -353,6 +414,7 @@ export function ClassRoutinePage() {
                 startDate: newSession.startDate!,
                 endDate: newSession.endDate!,
                 daysOfWeek: newSession.daysOfWeek!,
+                program: newSession.program!,
             };
 
             setClassSessions(prev => [...prev, session]);
@@ -371,6 +433,7 @@ export function ClassRoutinePage() {
             startDate: "",
             endDate: "",
             daysOfWeek: [],
+            program: "",
         });
     };
 
@@ -422,6 +485,87 @@ export function ClassRoutinePage() {
                                         <DialogTitle>{editingSessionId ? "Edit Class Schedule" : "Schedule New Class"}</DialogTitle>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="program">Academic Program</Label>
+                                            <Select
+                                                value={newSession.program}
+                                                onValueChange={(v) => setNewSession({ ...newSession, program: v })}
+                                            >
+                                                <SelectTrigger id="program">
+                                                    <SelectValue placeholder="Select program" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {programs.map((p) => (
+                                                        <SelectItem key={p} value={p}>
+                                                            {p}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="courseCode">Course Code</Label>
+                                                <Select
+                                                    value={newSession.courseCode}
+                                                    onValueChange={(code) => {
+                                                        const course = availableCourses.find(c => c.code === code);
+                                                        if (course) {
+                                                            setNewSession({
+                                                                ...newSession,
+                                                                courseCode: course.code,
+                                                                courseName: course.name,
+                                                                lecturer: course.lecturer,
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <SelectTrigger id="courseCode">
+                                                        <SelectValue placeholder="Select course code" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableCourses
+                                                            .filter(c => !newSession.program || c.program === newSession.program)
+                                                            .map((course) => (
+                                                                <SelectItem key={course.code} value={course.code}>
+                                                                    {course.code}
+                                                                </SelectItem>
+                                                            ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="courseName">Course Name</Label>
+                                                <Select
+                                                    value={newSession.courseName}
+                                                    onValueChange={(name) => {
+                                                        const course = availableCourses.find(c => c.name === name);
+                                                        if (course) {
+                                                            setNewSession({
+                                                                ...newSession,
+                                                                courseCode: course.code,
+                                                                courseName: course.name,
+                                                                lecturer: course.lecturer,
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <SelectTrigger id="courseName">
+                                                        <SelectValue placeholder="Select course name" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableCourses
+                                                            .filter(c => !newSession.program || c.program === newSession.program)
+                                                            .map((course) => (
+                                                                <SelectItem key={course.name} value={course.name}>
+                                                                    {course.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-2">
                                                 <Label htmlFor="startTime">Start Time</Label>
@@ -430,6 +574,7 @@ export function ClassRoutinePage() {
                                                     type="time"
                                                     value={newSession.startTime}
                                                     onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
+                                                    onClick={(e) => e.currentTarget.showPicker?.()}
                                                 />
                                             </div>
                                             <div className="grid gap-2">
@@ -439,27 +584,11 @@ export function ClassRoutinePage() {
                                                     type="time"
                                                     value={newSession.endTime}
                                                     onChange={(e) => setNewSession({ ...newSession, endTime: e.target.value })}
+                                                    onClick={(e) => e.currentTarget.showPicker?.()}
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="courseCode">Course Code</Label>
-                                            <Input
-                                                id="courseCode"
-                                                placeholder="e.g. CS101"
-                                                value={newSession.courseCode}
-                                                onChange={(e) => setNewSession({ ...newSession, courseCode: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="courseName">Course Name</Label>
-                                            <Input
-                                                id="courseName"
-                                                placeholder="e.g. Intro to Programming"
-                                                value={newSession.courseName}
-                                                onChange={(e) => setNewSession({ ...newSession, courseName: e.target.value })}
-                                            />
-                                        </div>
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-2">
                                                 <Label htmlFor="room">Room</Label>
@@ -474,9 +603,10 @@ export function ClassRoutinePage() {
                                                 <Label htmlFor="lecturer">Lecturer</Label>
                                                 <Input
                                                     id="lecturer"
-                                                    placeholder="e.g. Dr. Smith"
                                                     value={newSession.lecturer}
                                                     onChange={(e) => setNewSession({ ...newSession, lecturer: e.target.value })}
+                                                    readOnly
+                                                    className="bg-muted"
                                                 />
                                             </div>
                                         </div>
@@ -489,6 +619,7 @@ export function ClassRoutinePage() {
                                                     type="date"
                                                     value={newSession.startDate}
                                                     onChange={(e) => setNewSession({ ...newSession, startDate: e.target.value })}
+                                                    onClick={(e) => e.currentTarget.showPicker?.()}
                                                 />
                                             </div>
                                             <div className="grid gap-2">
@@ -498,6 +629,7 @@ export function ClassRoutinePage() {
                                                     type="date"
                                                     value={newSession.endDate}
                                                     onChange={(e) => setNewSession({ ...newSession, endDate: e.target.value })}
+                                                    onClick={(e) => e.currentTarget.showPicker?.()}
                                                 />
                                             </div>
                                         </div>
@@ -530,6 +662,24 @@ export function ClassRoutinePage() {
                                 </DialogContent>
                             </Dialog>
                         )}
+                    </div>
+
+                    {/* Program Filter */}
+                    <div className="flex items-center gap-4">
+                        <Label htmlFor="program-filter" className="text-sm font-medium">Academic Program:</Label>
+                        <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                            <SelectTrigger className="w-full sm:w-80" id="program-filter">
+                                <SelectValue placeholder="Select program" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Programs</SelectItem>
+                                {programs.map((p) => (
+                                    <SelectItem key={p} value={p}>
+                                        {p}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Days Navigation */}

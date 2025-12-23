@@ -36,9 +36,10 @@ export function LoginPage() {
     }
   };
 
-  const quickLogin = async (role: "admin" | "staff" | "student") => {
+  const quickLogin = async (role: "super_admin" | "admin" | "staff" | "student") => {
     const emails = {
-      admin: "admin@college.edu",
+      super_admin: "admin@college.edu",
+      admin: "deptadmin@college.edu",
       staff: "staff@college.edu",
       student: "student@college.edu",
     };
@@ -153,8 +154,13 @@ export function LoginPage() {
               </p>
               <div className="flex justify-center gap-3">
                 <button
+                  onClick={() => quickLogin("super_admin")}
+                  className="w-10 h-10 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-all text-xs font-bold flex items-center justify-center"
+                  title="Super Admin"
+                >SA</button>
+                <button
                   onClick={() => quickLogin("admin")}
-                  className="w-10 h-10 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all text-xs font-bold flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-muted text-muted-foreground hover:bg-blue-600 hover:text-white transition-all text-xs font-bold flex items-center justify-center"
                   title="Admin"
                 >A</button>
                 <button
