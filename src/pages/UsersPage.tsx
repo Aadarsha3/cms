@@ -331,7 +331,8 @@ export function UsersPage() {
   const handleSave = () => {
     // Validation
     if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.department || !formData.collegeId.trim()) {
-      toast({ title: "Please fill in all basic information fields including College ID", variant: "destructive" });
+      const idLabel = formData.role === "staff" ? "Staff_Id" : formData.role === "student" ? "Student_Id" : "Admin_Id";
+      toast({ title: `Please fill in all basic information fields including ${idLabel}`, variant: "destructive" });
       return;
     }
 
@@ -676,7 +677,11 @@ export function UsersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="collegeId">College ID</Label>
+                  <Label htmlFor="collegeId">
+                    {formData.role === "staff" ? "Staff_Id" :
+                      formData.role === "student" ? "Student_Id" :
+                        formData.role === "admin" ? "Admin_Id" : "College ID"}
+                  </Label>
                   <Input
                     id="collegeId"
                     value={formData.collegeId}

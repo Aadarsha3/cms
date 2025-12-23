@@ -8,6 +8,7 @@ import {
   BookOpen,
   ClipboardList,
   Building2,
+  CalendarDays,
 } from "lucide-react";
 import {
   Sidebar,
@@ -83,10 +84,22 @@ const navItems: NavItem[] = [
     roles: ["student", "admin"],
   },
   {
-    title: "My Reports",
+    title: "Reports",
     url: "/my-reports",
     icon: FileText,
     roles: ["student"],
+  },
+  {
+    title: "Attendance",
+    url: "/student-attendance",
+    icon: ClipboardList,
+    roles: ["student"],
+  },
+  {
+    title: "Academic Calendar",
+    url: "/calendar",
+    icon: CalendarDays,
+    roles: ["admin", "staff", "student"],
   },
   {
     title: "Profile",

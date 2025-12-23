@@ -198,6 +198,23 @@ export function ProfilePage() {
           </CardContent>
         </Card>
 
+        {/* Admin/Staff ID Card */}
+        {user.role !== "student" && user.collegeId && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Identification</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">
+                  {user.role === "staff" ? "Staff_Id" : "Admin_Id"}
+                </Label>
+                <p className="text-sm font-mono font-medium py-2">{user.collegeId}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {user.role === "student" && (
           <>
             <Card>
@@ -208,7 +225,7 @@ export function ProfilePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {user.collegeId && (
                     <div className="space-y-2">
-                      <Label className="text-muted-foreground">College ID</Label>
+                      <Label className="text-muted-foreground">Student_Id</Label>
                       <p className="text-sm font-mono font-medium py-2">{user.collegeId}</p>
                     </div>
                   )}

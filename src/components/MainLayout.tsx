@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -28,9 +29,10 @@ import {
 interface MainLayoutProps {
   children: ReactNode;
   title?: string;
+  className?: string;
 }
 
-export function MainLayout({ children, title }: MainLayoutProps) {
+export function MainLayout({ children, title, className }: MainLayoutProps) {
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
@@ -111,7 +113,7 @@ export function MainLayout({ children, title }: MainLayoutProps) {
               )}
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-6">
+          <main className={cn("flex-1 overflow-auto p-6", className)}>
             {children}
           </main>
         </div>

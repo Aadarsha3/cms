@@ -11,9 +11,9 @@ export interface AuthUser {
   avatarUrl?: string;
   // Staff-specific fields
   assignedCourses?: string[]; // Course codes that staff teaches
+  collegeId?: string;
   // Student-specific fields
   phone?: string;
-  collegeId?: string;
   universityId?: string;
   dateOfBirth?: string;
   gender?: "male" | "female" | "other";
@@ -42,6 +42,7 @@ const mockUsers: Record<string, AuthUser> = {
     name: "Dr. Sarah Johnson",
     email: "admin@college.edu",
     role: "admin",
+    collegeId: "ADM2024001",
     department: "Administration",
   },
   "staff@college.edu": {
@@ -49,6 +50,7 @@ const mockUsers: Record<string, AuthUser> = {
     name: "Prof. Michael Chen",
     email: "staff@college.edu",
     role: "staff",
+    collegeId: "STF2024001",
     department: "Computer Science",
     assignedCourses: ["CS101", "CS201"], // Courses this staff teaches
   },

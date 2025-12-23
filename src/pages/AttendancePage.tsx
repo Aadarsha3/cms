@@ -67,6 +67,23 @@ const mockStaffAttendance: AttendanceRecord[] = [
   { id: "s8", personId: "FAC002", personName: "Dr. Lisa Wang", department: "Computer Science", date: "2025-12-14", status: "present" },
 ];
 
+interface LeaveRequest {
+  id: number;
+  personName: string;
+  role: "Student" | "Staff";
+  type: string;
+  reason: string;
+  startDate: string;
+  endDate: string;
+  status: "Pending" | "Approved" | "Rejected";
+}
+
+const mockAllLeaveRequests: LeaveRequest[] = [
+  { id: 1, personName: "Emily Parker", role: "Student", type: "Sick Leave", reason: "Viral fever", startDate: "2025-12-23", endDate: "2025-12-25", status: "Pending" },
+  { id: 2, personName: "James Wilson", role: "Student", type: "Casual Leave", reason: "Family event", startDate: "2025-12-28", endDate: "2025-12-29", status: "Pending" },
+  { id: 3, personName: "Mark Robinson", role: "Student", type: "Medical Leave", reason: "Surgery recovery", startDate: "2026-01-05", endDate: "2026-01-15", status: "Approved" },
+];
+
 const courses = ["CS101", "CS201", "MBA501", "ME301"];
 const departments = ["Computer Science", "Business", "Mechanical Engineering", "Administration", "IT Support"];
 
@@ -118,6 +135,7 @@ export function AttendancePage() {
   // State for full-page marking mode
   const [isInMarkingMode, setIsInMarkingMode] = useState(false);
   const [markingType, setMarkingType] = useState<"student" | "staff" | null>(null);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockAllLeaveRequests);
   const { toast } = useToast();
 
   const userRole = user?.role || "student";
@@ -127,6 +145,15 @@ export function AttendancePage() {
 
   // Staff can only see their assigned courses
   const staffAssignedCourses = user?.assignedCourses || [];
+
+  const handleAuditLeave = (id: number, status: "Approved" | "Rejected") => {
+    setLeaveRequests(leaveRequests.map(req =>
+      req.id === id ? { ...req, status } : req
+    ));
+    toast({ title: `Leave request ${status.toLowerCase()} successfully` });
+  };
+
+  const pendingLeaveRequests = leaveRequests.filter(req => req.status === "Pending");
 
   const getFilteredStudentRecords = () => {
     let filtered = studentRecords.filter((r) => {
@@ -490,338 +517,398 @@ export function AttendancePage() {
             <TabsList>
               <TabsTrigger value="students">Student Attendance</TabsTrigger>
               <TabsTrigger value="staff">Staff/Faculty Attendance</TabsTrigger>
+              <TabsTrigger value="leave">Leave Applications</TabsTrigger>
             </TabsList>
           </Tabs>
         )}
 
-        {/* Filter and Action Bar */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  {activeTab === "students" ? "Student Attendance Records" : "Staff Attendance Records"}
-                </h3>
-                {/* Mark New Attendance Buttons */}
-                <div className="flex gap-2">
-                  {isStaff && activeTab === "students" && (
-                    <Dialog open={isMarkingAttendance} onOpenChange={setIsMarkingAttendance}>
-                      <DialogTrigger asChild>
-                        <Button className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Mark New Attendance
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Select Course & Date</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="course">Course</Label>
-                            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select course" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(isStaff ? staffAssignedCourses : courses).map((c) => (
-                                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="attendanceDate">Date</Label>
-                            <Input
-                              id="attendanceDate"
-                              type="date"
-                              value={attendanceDate}
-                              onChange={(e) => setAttendanceDate(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsMarkingAttendance(false)}>Cancel</Button>
-                          <Button onClick={handleMarkAttendance}>Start Marking</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                  {isAdmin && activeTab === "staff" && (
-                    <Dialog open={isMarkingStaffAttendance} onOpenChange={setIsMarkingStaffAttendance}>
-                      <DialogTrigger asChild>
-                        <Button className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Mark Staff Attendance
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Select Department & Date</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="department">Department</Label>
-                            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select department" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {departments.map((d) => (
-                                  <SelectItem key={d} value={d}>{d}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="staffAttendanceDate">Date</Label>
-                            <Input
-                              id="staffAttendanceDate"
-                              type="date"
-                              value={attendanceDate}
-                              onChange={(e) => setAttendanceDate(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsMarkingStaffAttendance(false)}>Cancel</Button>
-                          <Button onClick={handleMarkStaffAttendance}>Start Marking</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
-              </div>
-
-              {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name or ID..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                {activeTab === "students" ? (
-                  <Select value={courseFilter} onValueChange={setCourseFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filter by course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Courses</SelectItem>
-                      {(isStaff ? staffAssignedCourses : courses).map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filter by department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Departments</SelectItem>
-                      {departments.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <Input
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  placeholder="Filter by date"
-                />
-                <div className="flex gap-2">
-                  {((canEditStudents && activeTab === "students") || (canEditStaff && activeTab === "staff")) && (
-                    <>
-                      {isEditing ? (
-                        <>
-                          <Button onClick={handleSave} size="sm" className="flex-1">
-                            Save Changes
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                            Cancel
-                          </Button>
-                        </>
-                      ) : (
-                        <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="flex-1">
-                          Edit Mode
-                        </Button>
+        {/* Filter and Action Bar - Hide filters for Leave tab for simplicity or adapt */}
+        {activeTab !== "leave" && (
+          <>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">
+                      {activeTab === "students" ? "Student Attendance Records" : "Staff Attendance Records"}
+                    </h3>
+                    {/* Mark New Attendance Buttons */}
+                    <div className="flex gap-2">
+                      {isStaff && activeTab === "students" && (
+                        <Dialog open={isMarkingAttendance} onOpenChange={setIsMarkingAttendance}>
+                          <DialogTrigger asChild>
+                            <Button className="gap-2">
+                              <Plus className="h-4 w-4" />
+                              Mark New Attendance
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Select Course & Date</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                              <div className="grid gap-2">
+                                <Label htmlFor="course">Course</Label>
+                                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select course" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {(isStaff ? staffAssignedCourses : courses).map((c) => (
+                                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor="attendanceDate">Date</Label>
+                                <Input
+                                  id="attendanceDate"
+                                  type="date"
+                                  value={attendanceDate}
+                                  onChange={(e) => setAttendanceDate(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setIsMarkingAttendance(false)}>Cancel</Button>
+                              <Button onClick={handleMarkAttendance}>Start Marking</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       )}
-                    </>
-                  )}
-                  <Button variant="outline" onClick={handleExport} size="sm" className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
+                      {isAdmin && activeTab === "staff" && (
+                        <Dialog open={isMarkingStaffAttendance} onOpenChange={setIsMarkingStaffAttendance}>
+                          <DialogTrigger asChild>
+                            <Button className="gap-2">
+                              <Plus className="h-4 w-4" />
+                              Mark Staff Attendance
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Select Department & Date</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                              <div className="grid gap-2">
+                                <Label htmlFor="department">Department</Label>
+                                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select department" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {departments.map((d) => (
+                                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor="staffAttendanceDate">Date</Label>
+                                <Input
+                                  id="staffAttendanceDate"
+                                  type="date"
+                                  value={attendanceDate}
+                                  onChange={(e) => setAttendanceDate(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setIsMarkingStaffAttendance(false)}>Cancel</Button>
+                              <Button onClick={handleMarkStaffAttendance}>Start Marking</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Filters */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or ID..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    {activeTab === "students" ? (
+                      <Select value={courseFilter} onValueChange={setCourseFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by course" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Courses</SelectItem>
+                          {(isStaff ? staffAssignedCourses : courses).map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Departments</SelectItem>
+                          {departments.map((d) => (
+                            <SelectItem key={d} value={d}>{d}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <Input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      placeholder="Filter by date"
+                    />
+                    <div className="flex gap-2">
+                      {((canEditStudents && activeTab === "students") || (canEditStaff && activeTab === "staff")) && (
+                        <>
+                          {isEditing ? (
+                            <>
+                              <Button onClick={handleSave} size="sm" className="flex-1">
+                                Save Changes
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                                Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="flex-1">
+                              Edit Mode
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      <Button variant="outline" onClick={handleExport} size="sm" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Export
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {/* Statistics */}
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20 text-chart-4">
+                    <Check className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{presentCount}</p>
+                    <p className="text-sm text-muted-foreground">Present</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 text-destructive">
+                    <X className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{absentCount}</p>
+                    <p className="text-sm text-muted-foreground">Absent</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20 text-chart-2">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{lateCount}</p>
+                    <p className="text-sm text-muted-foreground">Late</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Statistics */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20 text-chart-4">
-                <Check className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{presentCount}</p>
-                <p className="text-sm text-muted-foreground">Present</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/20 text-destructive">
-                <X className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{absentCount}</p>
-                <p className="text-sm text-muted-foreground">Absent</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20 text-chart-2">
-                <Calendar className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{lateCount}</p>
-                <p className="text-sm text-muted-foreground">Late</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Attendance Table */}
+            <Card>
+              <CardContent className="p-0">
+                {activeTab === "students" ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-32">Student ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="w-28">Course</TableHead>
+                        <TableHead className="w-32">Date</TableHead>
+                        <TableHead className="w-28">Status</TableHead>
+                        {isEditing && canEditStudents && <TableHead className="w-40">Change Status</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredStudentRecords.length > 0 ? (
+                        filteredStudentRecords.map((record) => (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-mono text-sm">{record.personId}</TableCell>
+                            <TableCell className="font-medium">{record.personName}</TableCell>
+                            <TableCell>{record.course}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(record.date).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={statusColors[record.status]}>
+                                {record.status}
+                              </Badge>
+                            </TableCell>
+                            {isEditing && canEditStudents && (
+                              <TableCell>
+                                <Select
+                                  value={record.status}
+                                  onValueChange={(v) =>
+                                    updateStudentStatus(record.id, v as AttendanceRecord["status"])
+                                  }
+                                >
+                                  <SelectTrigger className="h-8">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="present">Present</SelectItem>
+                                    <SelectItem value="absent">Absent</SelectItem>
+                                    <SelectItem value="late">Late</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={isEditing && canEditStudents ? 6 : 5} className="h-32 text-center text-muted-foreground">
+                            No attendance records found for the selected filters.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-32">Staff ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="w-44">Department</TableHead>
+                        <TableHead className="w-32">Date</TableHead>
+                        <TableHead className="w-28">Status</TableHead>
+                        {isEditing && isAdmin && <TableHead className="w-40">Change Status</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredStaffRecords.length > 0 ? (
+                        filteredStaffRecords.map((record) => (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-mono text-sm">{record.personId}</TableCell>
+                            <TableCell className="font-medium">{record.personName}</TableCell>
+                            <TableCell>{record.department}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(record.date).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={statusColors[record.status]}>
+                                {record.status}
+                              </Badge>
+                            </TableCell>
+                            {isEditing && isAdmin && (
+                              <TableCell>
+                                <Select
+                                  value={record.status}
+                                  onValueChange={(v) =>
+                                    updateStaffStatus(record.id, v as AttendanceRecord["status"])
+                                  }
+                                >
+                                  <SelectTrigger className="h-8">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="present">Present</SelectItem>
+                                    <SelectItem value="absent">Absent</SelectItem>
+                                    <SelectItem value="late">Late</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={isEditing && isAdmin ? 6 : 5} className="h-32 text-center text-muted-foreground">
+                            No attendance records found for the selected filters.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
 
-        {/* Attendance Table */}
-        <Card>
-          <CardContent className="p-0">
-            {activeTab === "students" ? (
+        {activeTab === "leave" && (
+          <Card>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-32">Student ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="w-28">Course</TableHead>
-                    <TableHead className="w-32">Date</TableHead>
-                    <TableHead className="w-28">Status</TableHead>
-                    {isEditing && canEditStudents && <TableHead className="w-40">Change Status</TableHead>}
+                    <TableHead>Applicant</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Dates</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredStudentRecords.length > 0 ? (
-                    filteredStudentRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-mono text-sm">{record.personId}</TableCell>
-                        <TableCell className="font-medium">{record.personName}</TableCell>
-                        <TableCell>{record.course}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(record.date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[record.status]}>
-                            {record.status}
-                          </Badge>
-                        </TableCell>
-                        {isEditing && canEditStudents && (
-                          <TableCell>
-                            <Select
-                              value={record.status}
-                              onValueChange={(v) =>
-                                updateStudentStatus(record.id, v as AttendanceRecord["status"])
-                              }
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="present">Present</SelectItem>
-                                <SelectItem value="absent">Absent</SelectItem>
-                                <SelectItem value="late">Late</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={isEditing && canEditStudents ? 6 : 5} className="h-32 text-center text-muted-foreground">
-                        No attendance records found for the selected filters.
+                  {leaveRequests.map((req) => (
+                    <TableRow key={req.id}>
+                      <TableCell className="font-medium">{req.personName}</TableCell>
+                      <TableCell>{req.role}</TableCell>
+                      <TableCell>{req.type}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{req.startDate} to {req.endDate}</TableCell>
+                      <TableCell className="text-sm max-w-[200px] truncate" title={req.reason}>{req.reason}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={req.status === 'Approved' ? 'default' : req.status === 'Rejected' ? 'destructive' : 'secondary'}
+                        >
+                          {req.status}
+                        </Badge>
                       </TableCell>
+                      <TableCell className="text-right">
+                        {req.status === "Pending" && (
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="default" onClick={() => handleAuditLeave(req.id, "Approved")}>
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleAuditLeave(req.id, "Rejected")}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {leaveRequests.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">No leave requests found.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-32">Staff ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="w-44">Department</TableHead>
-                    <TableHead className="w-32">Date</TableHead>
-                    <TableHead className="w-28">Status</TableHead>
-                    {isEditing && isAdmin && <TableHead className="w-40">Change Status</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStaffRecords.length > 0 ? (
-                    filteredStaffRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-mono text-sm">{record.personId}</TableCell>
-                        <TableCell className="font-medium">{record.personName}</TableCell>
-                        <TableCell>{record.department}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {new Date(record.date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[record.status]}>
-                            {record.status}
-                          </Badge>
-                        </TableCell>
-                        {isEditing && isAdmin && (
-                          <TableCell>
-                            <Select
-                              value={record.status}
-                              onValueChange={(v) =>
-                                updateStaffStatus(record.id, v as AttendanceRecord["status"])
-                              }
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="present">Present</SelectItem>
-                                <SelectItem value="absent">Absent</SelectItem>
-                                <SelectItem value="late">Late</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={isEditing && isAdmin ? 6 : 5} className="h-32 text-center text-muted-foreground">
-                        No attendance records found for the selected filters.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
-    </MainLayout>
+    </MainLayout >
   );
 }

@@ -14,9 +14,11 @@ import { UsersPage } from "@/pages/UsersPage";
 import { AttendancePage } from "@/pages/AttendancePage";
 import { ResultsPage } from "@/pages/ResultsPage";
 import { StudentReportsPage } from "@/pages/StudentReportsPage";
+import { StudentAttendancePage } from "@/pages/StudentAttendancePage";
 import { ClassRoutinePage } from "@/pages/ClassRoutinePage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ChangePasswordPage } from "@/pages/ChangePasswordPage";
+import { CalendarPage } from "@/pages/CalendarPage";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({
@@ -74,6 +76,9 @@ function Router() {
       <Route path="/my-reports">
         <ProtectedRoute component={StudentReportsPage} roles={["student"]} />
       </Route>
+      <Route path="/student-attendance">
+        <ProtectedRoute component={StudentAttendancePage} roles={["student"]} />
+      </Route>
       <Route path="/class-routine">
         <ProtectedRoute component={ClassRoutinePage} roles={["student", "admin"]} />
       </Route>
@@ -83,8 +88,11 @@ function Router() {
       <Route path="/change-password">
         <ProtectedRoute component={ChangePasswordPage} />
       </Route>
+      <Route path="/calendar">
+        <ProtectedRoute component={CalendarPage} />
+      </Route>
       <Route component={NotFound} />
-    </Switch>
+    </Switch >
   );
 }
 
